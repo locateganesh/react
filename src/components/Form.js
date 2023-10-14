@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import supabase from '../utils/superbase';
+import { setData } from '../utils/storage'
 
 const Form = ({cats, setFactsData, setShowForm}) => {
   //console.log(category);
@@ -46,18 +46,21 @@ const Form = ({cats, setFactsData, setShowForm}) => {
     setFormError("");
 
     setIsUploading(true);
-    const {data: newFacts, error} = await supabase
-      .from("facts")
-      .insert([{text: fact, source, category}])
-      .select();
-
-    if (error) {
-      setFormError(error.message);
-    } else {
-      setFactsData((facts) => [newFacts[0], ...facts]);
-    } 
-
-
+    const data = {
+      id: new Date().getTime(),
+      category,
+      text: fact,
+      source,
+      voteFalse: 0,
+      voteIntresting: 0,
+      voteMindsBlowing: 0
+    };
+    try {
+      const updateData = await setData(data);
+      setFactsData([...updateData]);
+    } catch(err) {
+      setFormError(err);
+    }
     setFormValue({
       fact: "",
       source: "",
@@ -65,8 +68,6 @@ const Form = ({cats, setFactsData, setShowForm}) => {
     });
     setIsUploading(false);
     setShowForm(false);
-    //console.log(enteredData);
-
   };
 
   return (

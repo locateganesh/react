@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import supabase from '../utils/superbase';
+// import supabase from '../utils/superbase';
+
+const converterUndefined = (value) => {
+    return value ? value : 0;
+}
 
 const Facts = ({facts, colors, setFacts}) => {
     const [isUploading, setIsUploading] = useState(false);
@@ -10,19 +14,19 @@ const Facts = ({facts, colors, setFacts}) => {
     }
     const HandleVote = async(columnName, id) => {
         setIsUploading(true);
+       const filterFact = JSON.parse(localStorage.getItem('facts'));
+       const objIndex  = filterFact.findIndex(f => f.id === id);
+       if (!objIndex) {
+        return;
+       }
+       const getHits = filterFact[objIndex][columnName];
+       filterFact[objIndex][columnName] = getHits + 1;
+       
+       localStorage.setItem('facts', JSON.stringify(filterFact));
 
-        const {data: updatedFacts, error} = await supabase
-            .from("facts")
-            .update([{[columnName]: facts.find(item => item.id === id).voteIntresting + 1 }])
-            .eq("id", id)
-            .select();
-
-        console.log("updatedFacts", updatedFacts, id); 
-
-        if (!error) {
-            setFacts((fact) => fact.map(f => f.id === id ? updatedFacts[0] : f));
-        }
-        setIsUploading(false);
+       setFacts(filterFact);
+       
+       setIsUploading(false);
     }
 
     if(fl === 0) {
@@ -30,11 +34,8 @@ const Facts = ({facts, colors, setFacts}) => {
             <p className="message">No facts for this category! Create one now! ✌️</p>
         )
     }
-
-    //console.log("colors", colors);
     return (
         <section>
-          
           <ul className="facts-list">
             {facts && facts.map(item => {
                 return (
@@ -43,9 +44,9 @@ const Facts = ({facts, colors, setFacts}) => {
                     </p>
                     <span className="tag" style={{backgroundColor: colors.find(cat => cat.name === item.category).color}}>{item.category}</span>
                     <div className="vote-buttons">
-                        <button onClick={()=>HandleVote("voteIntresting", item.id)} disabled={isUploading}>👍 {item.voteIntresting}</button>
-                        <button onClick={()=>HandleVote("voteMindsBlowing", item.id)} disabled={isUploading}>🤯 {item.voteMindsBlowing}</button>
-                        <button onClick={()=>HandleVote("voteFalse", item.id)} disabled={isUploading}>⛔️ {item.voteFalse}</button>
+                        <button onClick={()=>HandleVote("voteIntresting", item.id)} disabled={isUploading}>👍 {converterUndefined(item.voteIntresting)}</button>
+                        <button onClick={()=>HandleVote("voteMindsBlowing", item.id)} disabled={isUploading}>🤯 {converterUndefined(item.voteMindsBlowing)}</button>
+                        <button onClick={()=>HandleVote("voteFalse", item.id)} disabled={isUploading}>⛔️ {converterUndefined(item.voteFalse)}</button>
                     </div>
                     </li>
                 )

@@ -4,7 +4,7 @@ import "./style.css"
 import Category from './components/Categories';
 import Facts from "./components/Facts";
 import { useEffect, useState, memo } from "react";
-import supabase from './utils/superbase';
+import { getData } from './utils/storage';
 
 const CATEGORIES = [
   { name: "technology", color: "#3b82f6" },
@@ -17,7 +17,6 @@ const CATEGORIES = [
   { name: "news", color: "#8b5cf6" },
 ];
 
-
 function App() {
   const [showForm, setShowForm] = useState(false);
   const [factsData, setFactsData] = useState([]);
@@ -25,28 +24,22 @@ function App() {
   const [apiError, setApiError] = useState("");
   const [currentCategory, setCurrentcatory] = useState("all");
 
-  
   useEffect(() => {
-    console.log(currentCategory);
     setIsLoading(true);
+
     async function getFacts() {
-
-      let query = supabase.from('facts').select('*');
-
-      if (currentCategory !== 'all') {
-        query = query.eq('category', currentCategory)
-      } 
-
-      const { data: facts, error } = await query
-        .order("voteIntresting", {ascending: false})
-        .limit(1000);
-      //console.log(facts);
-      if (error) {
-        setApiError(error.message);
-      } else {
-        setFactsData(facts);
+      try {
+        const data = await getData;
+        const facts = data;
+        if (currentCategory !== 'all') {
+          const filterFacts = facts.filter(item => item.category === currentCategory);
+          setFactsData(filterFacts);
+        } else {
+          setFactsData(facts);
+        }
+      } catch(err) {
+        setApiError(typeof err === "string" ? err : err.message);
       }
-      //console.log(facts, error);
       setIsLoading(false);
     }
     getFacts();
