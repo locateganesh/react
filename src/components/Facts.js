@@ -13,12 +13,9 @@ const Facts = ({facts, colors, setFacts}) => {
         return fl > 1 ? text1 : text2;
     }
     const HandleVote = async(columnName, id) => {
-        setIsUploading(true);
+       setIsUploading(true);
        const filterFact = JSON.parse(localStorage.getItem('facts'));
        const objIndex  = filterFact.findIndex(f => f.id === id);
-       if (!objIndex) {
-        return;
-       }
        const getHits = filterFact[objIndex][columnName];
        filterFact[objIndex][columnName] = getHits + 1;
        
